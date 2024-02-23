@@ -32,7 +32,7 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements
         TextToSpeech.OnInitListener, TimePickerFragment.TimePickerListener {
-
+    private DatabaseHelper db;
     private TextToSpeech textToSpeech;
     private Button setAlarmButton;
     private Button showToastButton;
@@ -48,7 +48,8 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        // Create a DatabaseHelper instance
+        db = new DatabaseHelper(this);
         // Initialize TextToSpeech
         textToSpeech = new TextToSpeech(this, this);
 
