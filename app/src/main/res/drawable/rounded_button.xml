@@ -1,0 +1,15 @@
+<!-- res/drawable/rounded_button.xml -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFF" /> <!-- Màu nền khi nút được nhấn -->
+            <corners android:radius="20dp" /> <!-- Bo góc ở 4 góc -->
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFF" /> <!-- Màu nền mặc định -->
+            <corners android:radius="20dp" /> <!-- Bo góc ở 4 góc -->
+        </shape>
+    </item>
+</selector>

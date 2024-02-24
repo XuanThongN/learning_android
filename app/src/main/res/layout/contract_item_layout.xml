@@ -1,22 +1,41 @@
+<!-- res/layout/item_contact.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:padding="16dp">
 
-    <TextView
-            android:id="@+id/contractTitleTextView"
-            android:layout_width="wrap_content"
+    <!-- Avatar -->
+    <ImageView
+            android:id="@+id/imageViewAvatar"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/ic_user_contact_24"/>
+
+    <!-- Dùng LinearLayout để chứa thông tin về tên và số điện thoại -->
+    <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textStyle="bold" />
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:orientation="vertical">
 
-    <TextView
-            android:id="@+id/contractPartiesTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+        <!-- Tên -->
+        <TextView
+                android:id="@+id/textViewName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:text="Thông Nguyễn"/>
 
-    <TextView
-            android:id="@+id/contractPurposeTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+        <!-- Số điện thoại -->
+        <TextView
+                android:id="@+id/textViewPhoneNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0932389999"
+                android:textSize="16sp" />
 
+    </LinearLayout>
 </LinearLayout>
