@@ -1,4 +1,4 @@
-package com.xuanthongn.hellobaby;
+package com.xuanthongn.hellobaby.models;
 
 public class Contact {
 private String name;

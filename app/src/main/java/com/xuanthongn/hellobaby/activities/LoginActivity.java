@@ -1,4 +1,4 @@
-package com.xuanthongn.hellobaby;
+package com.xuanthongn.hellobaby.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +8,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.xuanthongn.hellobaby.R;
 
 public class LoginActivity extends AppCompatActivity {
 

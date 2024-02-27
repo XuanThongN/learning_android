@@ -1,4 +1,4 @@
-package com.xuanthongn.hellobaby;
+package com.xuanthongn.hellobaby.activities;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -7,6 +7,8 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.xuanthongn.hellobaby.R;
 
 public class CustomerCreateActivity extends AppCompatActivity {
     private Button saveButton;
