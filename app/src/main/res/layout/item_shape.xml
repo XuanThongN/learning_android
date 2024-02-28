@@ -1,0 +1,35 @@
+<!-- item_shape.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+    <TextView
+            android:id="@+id/tvShapeType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="Rectangle"
+            android:textStyle="bold" />
+
+    <TextView
+            android:id="@+id/tvShapeDimensions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12 2 3 4"
+            android:textSize="14sp" />
+    <TextView
+            android:id="@+id/tvShapePerimeter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="45 cm"
+            android:textSize="14sp" />
+    <TextView
+            android:id="@+id/tvShapeArea"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="50cm2"
+            android:textSize="14sp" />
+
+</LinearLayout>

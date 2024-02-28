@@ -1,258 +1,162 @@
 package com.xuanthongn.hellobaby;
 
-import android.app.AlarmManager;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-import androidx.fragment.app.DialogFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.Calendar;
-import java.util.Locale;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements
-        TextToSpeech.OnInitListener, TimePickerFragment.TimePickerListener {
-
-    private TextToSpeech textToSpeech;
-    private Button setAlarmButton;
-    private Button showToastButton;
-    private Button showAlertButton;
-    private Button showCustomAlertButton;
-    private Button showNotificationButton;
-    private TextView selectedTimeTextView;
-    private AlarmManager alarmManager;
-    private PendingIntent alarmIntent;
-    TextView okay_text, cancel_text;
+public class MainActivity extends AppCompatActivity {
+    private String fileName = "input.txt";
+    Button btnWrite, btnRead;
+    TextView tvMaxArea;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize TextToSpeech
-        textToSpeech = new TextToSpeech(this, this);
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        tvMaxArea = findViewById(R.id.tvMaxArea);
 
-        // Initialize AlarmManager
-        alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
-        // Get reference to UI components
-        setAlarmButton = findViewById(R.id.setAlarmButton);
-        showToastButton = findViewById(R.id.showToastButton);
-        showAlertButton = findViewById(R.id.showAlertButton);
-        showCustomAlertButton = findViewById(R.id.showCustomAlertButton);
-        showNotificationButton = findViewById(R.id.showNotificationButton);
-        selectedTimeTextView = findViewById(R.id.selectedTimeTextView);
-
-
-        // Set click listener for the button to show TimePickerDialog
-        setAlarmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showTimePickerDialog();
-            }
-        });
-
-        // Set click listener for the showToastButton
-        showToastButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showToast("Hello, this is a toast message!"); // Replace the message with your desired toast message
-            }
-        });
-
-        // Set click listener for the showAlertButton
-        showAlertButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAlert("Hello, this is an alert dialog!"); // Replace the message with your desired alert message
-            }
-        });
-
-        Dialog dialog = new Dialog(MainActivity.this);
-
-        showCustomAlertButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                dialog.setContentView(R.layout.custom_dialog);
-                dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                dialog.setCancelable(false);
-                dialog.getWindow().getAttributes().windowAnimations = R.style.animation;
-
-                okay_text = dialog.findViewById(R.id.okay_text);
-                cancel_text = dialog.findViewById(R.id.cancel_text);
-
-                okay_text.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dialog.dismiss();
-                        Toast.makeText(MainActivity.this, "okay clicked", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-                cancel_text.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dialog.dismiss();
-                        Toast.makeText(MainActivity.this, "Cancel clicked", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-                dialog.show();
-
-            }
-        });
-
-        showNotificationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addNotification();
-            }
-        });
+        String fileName = "input.txt";
+        String fileContent = readFileContent(fileName);
+        List<Shape> shapes = parseShapes(fileContent);
+        // Sort shapes by perimeter
+        shapes = sortShapesByPerimeter(shapes);
+        ShapeAdapter shapeAdapter = new ShapeAdapter(shapes);
+        recyclerView.setAdapter(shapeAdapter);
+        Shape largestShape = findShapeWithLargestArea(shapes);
+        tvMaxArea.setText(largestShape.getType());
     }
 
-
-    private void showAlert(String s) {
-        // Create an AlertDialog.Builder instance
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        // Set the alert message
-        builder.setMessage(s);
-
-        // Set the positive button
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // Do something when the positive button is clicked
+    public void readFile(View view) {
+        try {
+            FileInputStream fileInputStream = openFileInput(fileName);
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            StringBuffer stringBuffer = new StringBuffer();
+            String lines;
+            while ((lines = bufferedReader.readLine()) != null) {
+                stringBuffer.append(lines);
+                stringBuffer.append("\n");
             }
-        });
+            bufferedReader.close();
+            inputStreamReader.close();
+            Log.d("File Content", stringBuffer.toString());
+            Toast.makeText(this, stringBuffer.toString(), Toast.LENGTH_LONG).show();
 
-        // Create and show the AlertDialog
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }
-
-    private void showToast(String str) {
-        Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
-    }
-
-    private void showTimePickerDialog() {
-        DialogFragment timePickerFragment = new TimePickerFragment();
-        timePickerFragment.show(getSupportFragmentManager(), "timePicker");
-    }
-
-    @Override
-    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        // Convert selected time to a string format
-        String timeString = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute);
-
-        // Update TextView to show the selected time
-        selectedTimeTextView.setText("Selected Time: " + timeString);
-
-        // Set up the alarm for the selected time
-        setAlarm(hourOfDay, minute);
-    }
-
-    private void setAlarm(int hourOfDay, int minute) {
-        // Create a Calendar instance for the selected time
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        calendar.set(Calendar.MINUTE, minute);
-        calendar.set(Calendar.SECOND, 0);
-
-        // Create an Intent to be broadcasted when the alarm fires
-        Intent intent = new Intent(this, AlarmReceiver.class);
-        alarmIntent = PendingIntent.getBroadcast(
-                this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
-        );
-
-        // Set the alarm to trigger at the specified time
-        alarmManager.setExact(
-                AlarmManager.RTC_WAKEUP,
-                calendar.getTimeInMillis(),
-                alarmIntent
-        );
-    }
-
-
-    private void addNotification() {
-        // Create an intent to open the NotificationView activity
-        Intent notificationIntent = new Intent(this, NotificationView.class);
-        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        notificationIntent.putExtra("message", "This is a notification message");
-
-        // Create a pending intent to wrap the notification intent
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        // Create a notification channel
-        String channelId = "my_channel_id";
-        CharSequence channelName = "My Channel";
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
-        NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
-
-        // Get the notification manager and create the channel
-        NotificationManager notificationManager = getSystemService(NotificationManager.class);
-        notificationManager.createNotificationChannel(channel);
-
-        // Build the notification
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.drawable.ic_message)
-                .setContentTitle("Thông báo từ Hello Baby")
-                .setContentText("Chiêm nghiệm hồng trần đại đế ! :D")
-                .setAutoCancel(true)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent);
-
-        // Show the notification
-        notificationManager.notify(0, builder.build());
-    }
-
-    @Override
-    public void onInit(int status) {
-        if (status == TextToSpeech.SUCCESS) {
-            int result = textToSpeech.setLanguage(new Locale("vi_VN"));
-
-            if (result == TextToSpeech.LANG_MISSING_DATA ||
-                    result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Log.e("TTS", "Language is not supported.");
-            }
-        } else {
-            Log.e("TTS", "Initialization failed.");
+        } catch (Exception ex) {
+            Log.e("Error : ", ex.toString());
+            Toast.makeText(this, ex.toString(), Toast.LENGTH_LONG).show();
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        if (textToSpeech != null) {
-            textToSpeech.stop();
-            textToSpeech.shutdown();
+    public void writeFile(View view) {
+        try {
+            FileOutputStream fileOutputStream = openFileOutput(fileName, MODE_PRIVATE);
+            OutputStreamWriter outputStreamwriter = new OutputStreamWriter(fileOutputStream);
+            outputStreamwriter.write("#rect1 5 6\n" +
+                    "#triangle1 6 8 9\n" +
+                    "#circle1 5\n" +
+                    "#rect2 6 8\n" +
+                    "#circle3 9\n");
+            outputStreamwriter.close();
+            fileOutputStream.close();
+            Toast.makeText(this, "Write file successfully", Toast.LENGTH_LONG).show();
+        } catch (Exception ex) {
+            Log.e("Error : ", ex.toString());
+            Toast.makeText(this, "Write file failed", Toast.LENGTH_LONG).show();
         }
+    }
 
-        // Cancel the alarm if the activity is destroyed
-        if (alarmManager != null && alarmIntent != null) {
-            alarmManager.cancel(alarmIntent);
+
+    private String readFileContent(String fileName) {
+        StringBuilder content = new StringBuilder();
+        try {
+            FileInputStream fileInputStream = openFileInput(fileName);
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            String lines;
+            while ((lines = bufferedReader.readLine()) != null) {
+                content.append(lines);
+                content.append("\n");
+            }
+            bufferedReader.close();
+            inputStreamReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return content.toString();
+    }
 
-        super.onDestroy();
+    private List<Shape> parseShapes(String fileContent) {
+        List<Shape> shapes = new ArrayList<>();
+        String[] lines = fileContent.split("\n");
+        for (String line : lines) {
+            String[] parts = line.split(" ");
+            if (parts.length >= 2) {
+                String shapeType = parts[0];
+                double[] dimensions = new double[parts.length - 1];
+                for (int i = 1; i < parts.length; i++) {
+                    dimensions[i - 1] = Double.parseDouble(parts[i]);
+                }
+                if (shapeType.contains("rect")) {
+                    shapes.add(new Rectangle(shapeType, dimensions));
+                } else if (shapeType.contains("triangle")) {
+                    shapes.add(new Triangle(shapeType, dimensions));
+                } else if (shapeType.contains("circle")) {
+                    shapes.add(new Circle(shapeType, dimensions));
+                }
+            }
+        }
+        return shapes;
+    }
+
+    private List<Shape> sortShapesByPerimeter(List<Shape> input) {
+        // Sort shapes by perimeter
+        List<Shape> shapes = input;
+        Collections.sort(shapes, new Comparator<Shape>() {
+            @Override
+            public int compare(Shape shape1, Shape shape2) {
+                double perimeter1 = shape1.calculatePerimeter();
+                double perimeter2 = shape2.calculatePerimeter();
+                return Double.compare(perimeter1, perimeter2);
+            }
+        });
+        return shapes;
+    }
+
+    private Shape findShapeWithLargestArea(List<Shape> shapes) {
+        Shape largestShape = null;
+        double largestArea = 0.0;
+        for (Shape shape : shapes) {
+            double area = shape.calculateArea();
+            if (area > largestArea) {
+                largestArea = area;
+                largestShape = shape;
+            }
+        }
+        return largestShape;
     }
 }
