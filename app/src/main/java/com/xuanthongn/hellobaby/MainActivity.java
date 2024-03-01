@@ -1,162 +1,99 @@
 package com.xuanthongn.hellobaby;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
-    private String fileName = "input.txt";
-    Button btnWrite, btnRead;
-    TextView tvMaxArea;
+
+    private ProgressBar progressBar;
+    private int progressStatus = 0;
+    private Handler handler = new Handler();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        progressBar = findViewById(R.id.progressbar);
+        progressBar.setMax(100);
 
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        tvMaxArea = findViewById(R.id.tvMaxArea);
-
-        String fileName = "input.txt";
-        String fileContent = readFileContent(fileName);
-        List<Shape> shapes = parseShapes(fileContent);
-        // Sort shapes by perimeter
-        shapes = sortShapesByPerimeter(shapes);
-        ShapeAdapter shapeAdapter = new ShapeAdapter(shapes);
-        recyclerView.setAdapter(shapeAdapter);
-        Shape largestShape = findShapeWithLargestArea(shapes);
-        tvMaxArea.setText(largestShape.getType());
-    }
-
-    public void readFile(View view) {
-        try {
-            FileInputStream fileInputStream = openFileInput(fileName);
-            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            StringBuffer stringBuffer = new StringBuffer();
-            String lines;
-            while ((lines = bufferedReader.readLine()) != null) {
-                stringBuffer.append(lines);
-                stringBuffer.append("\n");
-            }
-            bufferedReader.close();
-            inputStreamReader.close();
-            Log.d("File Content", stringBuffer.toString());
-            Toast.makeText(this, stringBuffer.toString(), Toast.LENGTH_LONG).show();
-
-        } catch (Exception ex) {
-            Log.e("Error : ", ex.toString());
-            Toast.makeText(this, ex.toString(), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    public void writeFile(View view) {
-        try {
-            FileOutputStream fileOutputStream = openFileOutput(fileName, MODE_PRIVATE);
-            OutputStreamWriter outputStreamwriter = new OutputStreamWriter(fileOutputStream);
-            outputStreamwriter.write("#rect1 5 6\n" +
-                    "#triangle1 6 8 9\n" +
-                    "#circle1 5\n" +
-                    "#rect2 6 8\n" +
-                    "#circle3 9\n");
-            outputStreamwriter.close();
-            fileOutputStream.close();
-            Toast.makeText(this, "Write file successfully", Toast.LENGTH_LONG).show();
-        } catch (Exception ex) {
-            Log.e("Error : ", ex.toString());
-            Toast.makeText(this, "Write file failed", Toast.LENGTH_LONG).show();
-        }
-    }
-
-
-    private String readFileContent(String fileName) {
-        StringBuilder content = new StringBuilder();
-        try {
-            FileInputStream fileInputStream = openFileInput(fileName);
-            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            String lines;
-            while ((lines = bufferedReader.readLine()) != null) {
-                content.append(lines);
-                content.append("\n");
-            }
-            bufferedReader.close();
-            inputStreamReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return content.toString();
-    }
-
-    private List<Shape> parseShapes(String fileContent) {
-        List<Shape> shapes = new ArrayList<>();
-        String[] lines = fileContent.split("\n");
-        for (String line : lines) {
-            String[] parts = line.split(" ");
-            if (parts.length >= 2) {
-                String shapeType = parts[0];
-                double[] dimensions = new double[parts.length - 1];
-                for (int i = 1; i < parts.length; i++) {
-                    dimensions[i - 1] = Double.parseDouble(parts[i]);
-                }
-                if (shapeType.contains("rect")) {
-                    shapes.add(new Rectangle(shapeType, dimensions));
-                } else if (shapeType.contains("triangle")) {
-                    shapes.add(new Triangle(shapeType, dimensions));
-                } else if (shapeType.contains("circle")) {
-                    shapes.add(new Circle(shapeType, dimensions));
-                }
-            }
-        }
-        return shapes;
-    }
-
-    private List<Shape> sortShapesByPerimeter(List<Shape> input) {
-        // Sort shapes by perimeter
-        List<Shape> shapes = input;
-        Collections.sort(shapes, new Comparator<Shape>() {
+        Button downloadButton = findViewById(R.id.downloadButton);
+        downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public int compare(Shape shape1, Shape shape2) {
-                double perimeter1 = shape1.calculatePerimeter();
-                double perimeter2 = shape2.calculatePerimeter();
-                return Double.compare(perimeter1, perimeter2);
+            public void onClick(View view) {
+                new DownloadFileTask().execute("https://download1323.mediafire.com/bnab473y17xg6jU2KChDHJs0mjlZruGWrcDrCD3Hx1hFcuQouaSV-iglES1IejcxadZnQVUI5dAcYmnDOatuKr30_KSpefpF5_xVKRJgWbsCOLrm-Pwe1OP8anjwcg3o4TXjtyJJoa-0uvY7ds7NwIMpyJlrH1dMMZSZyyfrWbkMwg/ycn756648nvv3rx/Nerd+AI_v2.6.2-gocmod.com.apk");
             }
         });
-        return shapes;
     }
 
-    private Shape findShapeWithLargestArea(List<Shape> shapes) {
-        Shape largestShape = null;
-        double largestArea = 0.0;
-        for (Shape shape : shapes) {
-            double area = shape.calculateArea();
-            if (area > largestArea) {
-                largestArea = area;
-                largestShape = shape;
+    private class DownloadFileTask extends AsyncTask<String, Integer, String> {
+
+        @Override
+        protected String doInBackground(String... urls) {
+            int fileLength = 0;
+
+            try {
+                URL url = new URL(urls[0]);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+
+                // getting file length
+                fileLength = connection.getContentLength();
+
+                // input stream to read file
+                InputStream input = connection.getInputStream();
+
+                //output extension of file
+                String extension = urls[0].substring(urls[0].lastIndexOf(".") + 1);
+
+                // output stream to write file
+                FileOutputStream output = openFileOutput("downloaded_file." + extension, MODE_PRIVATE);
+
+                byte[] data = new byte[1024];
+                long total = 0;
+                int count;
+                while ((count = input.read(data)) != -1) {
+                    total += count;
+                    // publishing the progress
+                    publishProgress((int) (total * 100 / fileLength));
+                    output.write(data, 0, count);
+                }
+
+                // flushing output
+                output.flush();
+
+                // closing streams
+                output.close();
+                input.close();
+                connection.disconnect();
+
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
             }
+            return null;
         }
-        return largestShape;
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            progressBar.setProgress(values[0]);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Toast.makeText(MainActivity.this, "File downloaded successfully", Toast.LENGTH_SHORT).show();
+        }
     }
 }
