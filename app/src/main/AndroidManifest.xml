@@ -22,7 +22,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".AlarmReceiver" />
+        <activity android:name=".SignUpActivity" />
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />

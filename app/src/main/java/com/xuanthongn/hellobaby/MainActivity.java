@@ -32,10 +32,21 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity  {
 
+    TextView signUpTextView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        signUpTextView = findViewById(R.id.signUpTextView);
+
+        signUpTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SignUpActivity.class);
+                startActivity(intent);
+            }
+        });
 
     }
 
